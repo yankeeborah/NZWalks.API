@@ -59,6 +59,85 @@ namespace NZWalks.API.Controllers
             //return DTO back to client
             return Ok(regionDto);
         }
+
+        [HttpPost]
+        public IActionResult Create(AddRegionRequestDto addRegionRequestDto)
+        {
+            //Map DTO to Domain model
+            var regionDomainModel = new Region
+            {
+                Code = addRegionRequestDto.Code,
+                Name = addRegionRequestDto.Name,
+                RegionImageUrl = addRegionRequestDto.RegionImageUrl
+            };
+
+            //Use Domain model to create Region
+            dbContext.Regions.Add(regionDomainModel);
+            dbContext.SaveChanges();
+
+            //map domain back to DTO
+            var regionDto = new RegionDto { 
+            Id= regionDomainModel.Id,
+            Code = regionDomainModel.Code,
+            Name = regionDomainModel.Name,
+            RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+            //want to get back the record in client
+            return CreatedAtAction(nameof(GetById),new { id = regionDomainModel.Id},regionDto);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public IActionResult Update(Guid id, UpdateRegionRequestDto updateRegionRequestDto)
+        {
+            var regionDomainModel = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            if(regionDomainModel == null)
+            {
+                return NotFound();
+            }
+            //update the Domain Model
+            regionDomainModel.Code = updateRegionRequestDto.Code;
+            regionDomainModel.Name = updateRegionRequestDto.Name;
+            regionDomainModel.RegionImageUrl = updateRegionRequestDto.RegionImageUrl;
+            dbContext.SaveChanges();
+            //Map Domain model to  DTO
+            var regionDto = new RegionDto
+            {
+                Id = regionDomainModel.Id,
+                Code = regionDomainModel.Code,
+                Name = regionDomainModel.Name,
+                RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+
+            return Ok(regionDto);
+
+ 
+
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete(Guid id)
+        {
+            var regionDomainModel = dbContext.Regions.FirstOrDefault(x=>x.Id == id);
+            if (regionDomainModel == null)
+            {
+                return NotFound();
+            }
+            dbContext.Regions.Remove(regionDomainModel);
+            dbContext.SaveChanges();
+
+            //return deleted region
+            var regionDto = new RegionDto()
+            {
+                Id = regionDomainModel.Id,
+                Code = regionDomainModel.Code,
+                Name = regionDomainModel.Name,
+                RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+            //return DTO back to client
+            return Ok(regionDto);
+        }
     }
 
     //DTO - Data transfer object
